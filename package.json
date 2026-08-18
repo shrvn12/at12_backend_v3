@@ -1,0 +1,50 @@
+{
+  "name": "at12_backend_v2",
+  "description": "Backend for AT12",
+  "scripts": {
+    "build": "npm install",
+    "serve": "node dashboard/index.js",
+    "start": "node dashboard/index.js",
+    "migrate": "node migrations/migrate.js",
+    "ingestion": "node ingestion/index.js",
+    "worker:event": "node event-worker/index.js",
+    "worker:feed": "node feed-worker/index.js",
+    "worker:maintenance": "node maintenance-worker/index.js",
+    "scheduler": "node scheduler/index.js",
+    "test": "node --test tests/*.test.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop ecosystem.config.js",
+    "pm2:restart": "pm2 restart ecosystem.config.js",
+    "pm2:logs": "pm2 logs"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "axios": "^1.7.9",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.6.1",
+    "http-errors": "~1.6.3",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "~1.9.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^7.0.9",
+    "pg": "^8.13.1",
+    "pino": "^9.6.0",
+    "pug": "^3.0.4",
+    "redis": "^4.7.0",
+    "ytmusic_api_unofficial": "^2.1.6",
+    "ytmusic-api": "^5.3.1"
+  },
+  "private": true,
+  "devDependencies": {
+    "pm2": "^7.0.3"
+  }
+}
