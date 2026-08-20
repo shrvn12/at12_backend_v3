@@ -22,8 +22,14 @@ const getHomeFeed = async (req, res) => {
       [userId]
     );
 
-    if (!rows[0]) {
-      return sendSuccess(res, { feed: [], generatedAt: null, source: 'none' });
+    if (!rows[0] || !rows[0].feed?.length) {
+      const trending = await globalTrendingRepository.getGlobalTrendingSongs(25);
+
+      return sendSuccess(res, {
+        feed: trending,
+        generatedAt: null,
+        source: 'global-trending',
+      });
     }
 
     return sendSuccess(res, { feed: rows[0].feed, generatedAt: rows[0].generated_at, source: 'db' });
@@ -53,8 +59,15 @@ const getMadeForYouPlaylist = async (req, res) => {
       [userId, playlistName]
     );
 
-    if (!rows[0]) {
-      return sendSuccess(res, { name: playlistName, songs: [], generatedAt: null, source: 'none' });
+    if (!rows[0] || !rows[0].playlist?.length) {
+      const popular = await globalTrendingRepository.getPopularSongs(25);
+
+      return sendSuccess(res, {
+        name: playlistName,
+        songs: popular,
+        generatedAt: null,
+        source: 'global-popular',
+      });
     }
 
     return sendSuccess(res, {
