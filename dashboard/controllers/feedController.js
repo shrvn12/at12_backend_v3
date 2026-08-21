@@ -13,7 +13,7 @@ const getHomeFeed = async (req, res) => {
 
     const userId = req.user.id;
     const cached = await redis.get(redis.keys.homeFeed(userId));
-    if (cached) {
+    if (cached && cached.length) {
       return sendSuccess(res, { feed: cached, generatedAt: null, source: 'cache' });
     }
 
