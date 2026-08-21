@@ -47,6 +47,8 @@ const keys = {
   profile: (userId) => `profile:${userId}`,
   song: (videoId) => `song:${videoId}`,
   search: (normalizedQuery) => `search:${normalizedQuery}`,
+  topTracks: (userId) => `top_tracks:${userId}`,
+  topTracksGlobal: () => `top_tracks:global`,
 };
 
 async function get(key) {
