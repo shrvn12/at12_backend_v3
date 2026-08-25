@@ -10,12 +10,14 @@ const config = require('../common/config');
 
 async function publishStaleHomeFeeds() {
   const { rows } = await query(
-    `SELECT u.id AS user_id
-     FROM users u
-     LEFT JOIN generated_home_feeds f ON f.user_id = u.id
-     WHERE f.user_id IS NULL OR f.generated_at < now() - ($1 || ' hours')::interval`,
-    [config.scheduler.homeFeedStaleHours]
-  );
+  `SELECT u.id AS user_id
+   FROM users u
+   LEFT JOIN generated_home_feeds f ON f.user_id = u.id
+   WHERE f.user_id IS NULL
+      OR f.generated_at < now() - ($1 || ' hours')::interval
+      OR jsonb_array_length(f.feed) = 0`,
+  [config.scheduler.homeFeedStaleHours]
+);
 
   for (const row of rows) {
     await publishFeedGenerationJob({ type: 'GENERATE_HOME_FEED', userId: row.user_id });
