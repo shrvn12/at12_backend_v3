@@ -1,8 +1,6 @@
 const { query } = require('../../common/db');
 
-// "Trending" = most SONG_COMPLETED events across ALL users in the window.
-// Cheap on purpose: one grouped aggregate, no per-user computation.
-async function getGlobalTrendingSongs(limit = 25, windowDays = 14) {
+async function trendingForWindow(limit, days) {
   const { rows } = await query(
     `SELECT s.video_id, s.title, s.artists, s.thumbnails, s.duration,
             count(*) AS play_count
@@ -13,14 +11,13 @@ async function getGlobalTrendingSongs(limit = 25, windowDays = 14) {
      GROUP BY s.video_id, s.title, s.artists, s.thumbnails, s.duration
      ORDER BY play_count DESC
      LIMIT $1`,
-    [limit, windowDays]
+    [limit, days]
   );
   return rows;
 }
 
-// "Popular" = highest YouTube view counts among songs already persisted.
-// Even cheaper - no interaction_events scan at all, just an ORDER BY on
-// an already-indexed-friendly column.
+// Highest view counts among persisted songs; if song_stats is empty too,
+// fall back to whatever songs were touched most recently.
 async function getPopularSongs(limit = 25) {
   const { rows } = await query(
     `SELECT s.video_id, s.title, s.artists, s.thumbnails, s.duration,
@@ -31,7 +28,26 @@ async function getPopularSongs(limit = 25) {
      LIMIT $1`,
     [limit]
   );
-  return rows;
+  if (rows.length) return rows;
+
+  const recent = await query(
+    `SELECT video_id, title, artists, thumbnails, duration
+     FROM songs
+     ORDER BY last_accessed_at DESC
+     LIMIT $1`,
+    [limit]
+  );
+  return recent.rows;
+}
+
+// Try the requested window first, widen it if empty, and only then fall
+// back to all-time popularity. A quiet week no longer empties the feed.
+async function getGlobalTrendingSongs(limit = 25, windowDays = 14) {
+  for (const days of [windowDays, 90, 365]) {
+    const rows = await trendingForWindow(limit, days);
+    if (rows.length) return rows;
+  }
+  return getPopularSongs(limit);
 }
 
 module.exports = { getGlobalTrendingSongs, getPopularSongs };

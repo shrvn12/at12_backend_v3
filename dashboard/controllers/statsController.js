@@ -118,13 +118,20 @@ const getTopTracks = async (req, res) => {
       source = 'personalized';
     } else {
       // No personalized data → fall back to global tracks.
-      const fallback = await globalTrendingRepository.getGlobalTrendingSongs(
-        MAX_TOP_TRACKS,
-        30
-      );
-
-      tracks = mapGlobalTracks(fallback);
-      source = 'global-fallback';
+       const fallback = await globalTrendingRepository.getGlobalTrendingSongs(limit, 30);
+        return sendSuccess(res, {
+          tracks: fallback.map((r) => ({
+            videoId: r.video_id,
+            title: r.title,
+            artists: r.artists,
+            thumbnail: r.thumbnails?.[0]?.url || null,
+            duration: r.duration,
+            playCount: parseInt(r.play_count || 0, 10),
+            lastPlayedAt: null,
+            score: null,
+          })),
+          scope: 'global',
+        });
     }
 
     // Cache the generated result for 24 hours.
